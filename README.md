@@ -1,114 +1,204 @@
-# 🌿 EcoVerde Antioquia S.A.S. — Entorno Dockerizado
+# Portal EcoVerde Antioquia 🌿
 
-Proyecto desarrollado por aprendices ADSO del SENA como solución técnica
-para el despliegue web institucional de EcoVerde Antioquia S.A.S.
+Solución DevOps mínima y documentada para la modernización del despliegue de software de EcoVerde Antioquia S.A.S. como parte del programa ADSO - SENA Centro CTMA.
 
----
+## Descripción del proyecto
 
-## 📋 Descripción del proyecto
+EcoVerde Antioquia S.A.S. necesitaba modernizar su forma de entregar software. Anteriormente los despliegues eran manuales, sin trazabilidad de cambios ni entornos consistentes. Este proyecto implementa una solución DevOps completa que cubre desde cultura DevOps hasta observabilidad básica.
 
-EcoVerde presentaba dificultades frecuentes: aplicaciones que funcionaban
-en un equipo pero fallaban en otro, configuraciones manuales inconsistentes
-y poca trazabilidad del proceso. Este entorno Dockerizado resuelve esos
-problemas mediante contenedores reproducibles, red personalizada, volumen
-persistente y automatización con Docker Compose.
+## Tecnologías utilizadas
 
----
+- **Docker** - Contenedores y construcción de imagen
+- **Docker Compose** - Orquestación de servicios locales
+- **GitHub Actions** - Pipeline CI/CD automatizado
+- **Kubernetes** - Manifiestos de despliegue en clúster
+- **Terraform** - Infraestructura como Código (IaC)
+- **Nginx** - Servidor web dentro del contenedor
+- **Git** - Control de versiones
 
-## 🗂️ Estructura del proyecto
-
+## Estructura del repositorio
 proyecto-ecoverde/
+
+├── README.md
+
+├── Dockerfile
+
+├── compose.yml
+
+├── .gitignore
+
 ├── app/
-│   └── index.html        # Página web institucional
-├── evidencias/           # Capturas del proceso
-├── Dockerfile            # Imagen personalizada basada en nginx:alpine
-├── compose.yml           # Orquestación de servicios
-└── README.md             # Este archivo
 
----
+│   └── index.html
 
-## 🐳 Tecnologías utilizadas
+├── .github/
 
-- Docker + Docker Compose
-- nginx:alpine (servidor web)
-- Git + GitHub (control de versiones)
-- HTML5 + CSS3 (página institucional)
+│   └── workflows/
 
----
+│       └── pipeline.yml
 
-## ⚙️ Comandos principales utilizados
+├── k8s/
 
-### Construcción de la imagen
+│   ├── deployment.yaml
+
+│   └── service.yaml
+
+├── iac/
+
+│   └── main.tf
+
+├── observabilidad/
+
+│   └── evidencias.md
+
+└── evidencias/
+
+├── git-log.png
+
+├── docker-ps.png
+
+├── actions.png
+
+├── kubectl-get-pods.png
+
+└── logs-metricas.png
+
+## Cómo ejecutar
+
+### Requisitos previos
+
+- Docker Desktop instalado
+- Git instalado
+- (Opcional) kubectl para Kubernetes
+- (Opcional) Terraform para IaC
+
+### Con Docker Compose
+
 ```bash
-docker build -t ecoverde-web .
-```
+# Clonar el repositorio
+git clone https://github.com/esteban01Br/EcoVerde.git
+cd EcoVerde/proyecto-ecoverde
 
-### Levantar el entorno completo
-```bash
+# Levantar servicios
 docker compose up -d
-```
 
-### Ver contenedores activos
-```bash
-docker ps
+# Ver logs
+docker compose logs -f
+
+# Ver estado
 docker compose ps
-```
 
-### Ver volumen creado
-```bash
-docker volume ls
-```
-
-### Ver red creada
-```bash
-docker network ls
-```
-
-### Historial de commits
-```bash
-git log --oneline
-```
-
-### Bajar el entorno
-```bash
+# Detener servicios
 docker compose down
 ```
 
----
+### Solo con Docker
 
-## 🌐 Acceso a la aplicación
+```bash
+# Construir imagen
+docker build -t ecoverde-app:latest .
 
-Una vez levantado el entorno, abrir en el navegador:
-http://localhost:8080
+# Ejecutar contenedor
+docker run -d -p 8080:80 --name ecoverde-app ecoverde-app:latest
 
----
+# Ver logs
+docker logs -f ecoverde-app
 
-## 🔧 Servicios definidos en compose.yml
+# Ver métricas
+docker stats ecoverde-app
+```
 
-| Servicio | Imagen | Puerto | Función |
-|---|---|---|---|
-| web | ecoverde-web | 8080:80 | Sirve la página institucional |
-| monitor | busybox | — | Simula monitoreo del servicio web |
+La aplicación queda disponible en: `http://localhost:8080`
 
----
+## CI/CD con GitHub Actions
 
-## 📦 Volumen
+El pipeline `.github/workflows/pipeline.yml` se ejecuta automáticamente en cada push a `main` y realiza:
 
-`ecoverde_web-content` — Persiste los archivos HTML más allá
-del ciclo de vida del contenedor.
+1. ✅ Checkout del código fuente
+2. ✅ Validación de archivos obligatorios
+3. ✅ Build de la imagen Docker
+4. ✅ Verificación de que el contenedor arranca y responde
+5. ✅ Resumen del pipeline con rama, commit y actor
 
-## 🌐 Red
+## Manifiestos Kubernetes
 
-`ecoverde_ecoverde-net` — Red bridge personalizada que conecta
-los servicios web y monitor.
+```bash
+# Aplicar todos los manifiestos
+kubectl apply -f k8s/
 
----
+# Ver pods corriendo
+kubectl get pods
 
-## 👥 Equipo
+# Ver servicios
+kubectl get services
 
-- Esteban — Aprendiz ADSO, SENA Centro CTMA
-- Miguel Ángel Ocampo Muñoz — Aprendiz ADSO, SENA Centro CTMA
+# Ver detalle del deployment
+kubectl describe deployment ecoverde-deployment
+```
 
-**Instructor:** Wilson
-**Programa:** Tecnología en Análisis y Desarrollo de Software
-**Centro:** CTMA — SENA Antioquia
+## Infraestructura como Código - Terraform
+
+```bash
+# Entrar a la carpeta
+cd iac/
+
+# Inicializar Terraform
+terraform init
+
+# Ver plan de ejecución
+terraform plan
+
+# Aplicar configuración
+terraform apply
+```
+
+## Observabilidad
+
+### Logs en tiempo real
+
+```bash
+docker logs -f ecoverde-app
+docker compose logs -f
+```
+
+### Métricas de CPU y memoria
+
+```bash
+docker stats ecoverde-app
+```
+
+### Estado del healthcheck
+
+```bash
+docker inspect --format='{{.State.Health.Status}}' ecoverde-app
+```
+
+Ver más detalles en `observabilidad/evidencias.md`.
+
+## Evidencias
+
+Las capturas de pantalla que evidencian el funcionamiento del proyecto se encuentran en la carpeta `evidencias/`:
+
+| Evidencia | Descripción |
+|-----------|-------------|
+| `git-log.png` | Historial de commits con `git log --oneline` |
+| `docker-ps.png` | Contenedores corriendo con `docker ps` |
+| `actions.png` | Pipeline ejecutado en GitHub Actions |
+| `kubectl-get-pods.png` | Pods corriendo en Kubernetes |
+| `logs-metricas.png` | Logs y métricas del contenedor |
+
+## Conclusiones
+
+- **Docker** garantiza entornos consistentes y reproducibles, eliminando el problema de "en mi máquina funciona".
+- **GitHub Actions** automatiza la validación y build en cada cambio, reduciendo errores humanos.
+- **Los manifiestos de Kubernetes** permiten escalar la aplicación de forma declarativa sin intervención manual.
+- **Terraform** versiona la configuración de infraestructura, haciendo los entornos auditables y repetibles.
+- **Los logs y métricas** de Docker permiten observar el estado del servicio en tiempo real, mejorando la capacidad de respuesta ante incidentes.
+
+## Autor
+
+**Esteban Bedoya Rojo**  
+Programa: Tecnología en Análisis y Desarrollo de Software (ADSO)  
+Centro: SENA Centro CTMA - Antioquia  
+Instructor: Juan Carlos Quintero Romero  
+Año: 2026
