@@ -1,0 +1,40 @@
+name: CI/CD Pipeline - EcoVerde Antioquia
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build y Validación
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código fuente
+        uses: actions/checkout@v4
+
+      - name: Validar archivos obligatorios
+        run: |
+          test -f Dockerfile     && echo "✅ Dockerfile OK"     || exit 1
+          test -f compose.yml    && echo "✅ compose.yml OK"    || exit 1
+          test -f app/index.html && echo "✅ app/index.html OK" || exit 1
+
+      - name: Build imagen Docker
+        run: |
+          docker build -t ecoverde-app:latest .
+
+      - name: Verificar que el contenedor arranca
+        run: |
+          docker run -d --name test-ecoverde -p 8080:80 ecoverde-app:latest
+          sleep 3
+          curl -f http://localhost:8080 || (docker logs test-ecoverde && exit 1)
+          docker stop test-ecoverde && docker rm test-ecoverde
+          echo "✅ Contenedor respondió correctamente"
+
+      - name: Resumen del pipeline
+        run: |
+          echo "Rama:   ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor:  ${{ github.actor }}"
