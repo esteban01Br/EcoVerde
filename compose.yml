@@ -1,0 +1,28 @@
+services:
+
+  web:
+    build: .
+    container_name: ecoverde-web
+    ports:
+      - "8080:80"
+    volumes:
+      - web-content:/usr/share/nginx/html
+    networks:
+      - ecoverde-net
+    restart: unless-stopped
+
+  monitor:
+    image: busybox
+    container_name: ecoverde-monitor
+    command: sh -c "while true; do echo '[EcoVerde] Servicio web activo...'; sleep 30; done"
+    networks:
+      - ecoverde-net
+    restart: unless-stopped
+
+volumes:
+  web-content:
+    driver: local
+
+networks:
+  ecoverde-net:
+    driver: bridge
