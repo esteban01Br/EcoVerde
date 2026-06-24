@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecoverde-deployment
+  labels:
+    app: ecoverde
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ecoverde
+  template:
+    metadata:
+      labels:
+        app: ecoverde
+    spec:
+      containers:
+        - name: ecoverde-app
+          image: ecoverde-app:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
